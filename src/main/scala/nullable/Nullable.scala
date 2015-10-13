@@ -115,6 +115,13 @@ final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
       Left(value)
     else
       Right(right)
+
+  @inline
+  def toOption: Option[A] =
+    if(isDefined)
+      Some(value)
+    else
+      None
 }
 
 object Nullable {
