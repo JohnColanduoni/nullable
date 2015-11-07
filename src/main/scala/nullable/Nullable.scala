@@ -2,9 +2,9 @@ package nullable
 
 import scala.language.implicitConversions
 
-final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
+final class Nullable[+A >: Null](val value: A) extends AnyVal {
   @inline
-  def isEmpty = value eq null
+  def isEmpty = value.asInstanceOf[AnyRef] eq null
 
   @inline
   def isDefined = !isEmpty
@@ -23,7 +23,7 @@ final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
       value
 
   @inline
-  def map[B <: AnyRef](f: A => B): Nullable[B] =
+  def map[B >: Null](f: A => B): Nullable[B] =
     if(isEmpty)
       Null
     else
@@ -37,9 +37,9 @@ final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
       f(value)
 
   @inline
-  def flatMap[B <: AnyRef](f: A => Nullable[B]): Nullable[B] =
+  def flatMap[B >: Null](f: A => Nullable[B]): Nullable[B] =
     if(isEmpty)
-      Nullable(null.asInstanceOf[B])
+      Null
     else
       f(value)
 
@@ -77,14 +77,14 @@ final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
       f(value)
 
   @inline
-  def collect[B <: AnyRef](pf: PartialFunction[A, B]): Nullable[B] =
+  def collect[B >: Null](pf: PartialFunction[A, B]): Nullable[B] =
     if(isDefined)
       Nullable[B](pf.applyOrElse[A, B](value, x => null.asInstanceOf[B]))
     else
       Null
 
   @inline
-  def orElse[B >: A <: AnyRef](alternative: => Nullable[B]): Nullable[B]  =
+  def orElse[B >: A](alternative: => Nullable[B]): Nullable[B]  =
     if(isDefined)
       this
     else
@@ -125,15 +125,11 @@ final class Nullable[+A <: AnyRef](val value: A) extends AnyVal {
 }
 
 object Nullable {
-  def apply[T <: AnyRef](value: T) = new Nullable(value)
-
-  implicit def nullMarkerToNull[A <: AnyRef](x: Null.type): Nullable[A] = new Nullable(null.asInstanceOf[A])
-}
-
-object Null {
-  def unapply[T <: AnyRef](x: Nullable[T]) = x.isEmpty
+  @inline
+  def apply[T >: Null](value: T): Nullable[T] = new Nullable(value)
 }
 
 object NotNull {
-  def unapply[T <: AnyRef](x: Nullable[T]) = x
+  @inline
+  def unapply[T >: Null](x: Nullable[T]) = x
 }
