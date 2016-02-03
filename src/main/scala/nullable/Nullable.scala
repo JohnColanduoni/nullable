@@ -122,6 +122,11 @@ final class Nullable[+A >: Null](val value: A) extends AnyVal {
       Some(value)
     else
       None
+
+  override def toString = value match {
+    case null => "Null"
+    case x => s"NotNull($x)"
+  }
 }
 
 object Nullable {
